@@ -1,0 +1,754 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>방정호 — AI / Backend</title>
+<meta name="description" content="강원대학교 AI융합학과. 검색·추론 파이프라인이 느리거나 틀리는 지점을 찾아 고치는 일을 합니다.">
+<meta property="og:title" content="방정호 — AI / Backend">
+<meta property="og:description" content="검색·추론 파이프라인이 느리거나 틀리는 지점을 찾아 고칩니다.">
+<meta property="og:type" content="website">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%23111'/%3E%3Ctext x='16' y='23' font-family='Helvetica,Arial' font-size='17' font-weight='bold' fill='%23fff' text-anchor='middle'%3EB%3C/text%3E%3C/svg%3E">
+<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+<link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
+<style>
+:root{
+  --paper:#f4f2ee;
+  --ink:#111111;
+  --mute:#6f6a62;
+  --rule:#c9c4ba;
+  --red:#d6280f;
+  --gut:24px;
+  --font:"Pretendard Variable",Pretendard,-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+  --mono:ui-monospace,SFMono-Regular,"SF Mono",Menlo,Consolas,"Liberation Mono",monospace;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{-webkit-text-size-adjust:100%;scroll-behavior:smooth}
+body{
+  background:var(--paper);color:var(--ink);
+  font-family:var(--font);
+  font-feature-settings:"tnum" 1,"case" 1;
+  -webkit-font-smoothing:antialiased;
+  line-height:1.5;
+}
+a{color:inherit}
+::selection{background:var(--ink);color:var(--paper)}
+
+/* i18n */
+html[lang="ko"] .en{display:none !important}
+html[lang="en"] .ko{display:none !important}
+
+/* grid shell */
+.wrap{max-width:1440px;margin:0 auto;padding-left:var(--gut);padding-right:var(--gut)}
+.grid{display:grid;grid-template-columns:repeat(12,1fr);gap:0 var(--gut)}
+
+/* labels */
+.lab{
+  font-family:var(--mono);font-size:10.5px;letter-spacing:.16em;
+  text-transform:uppercase;color:var(--mute);
+}
+.rule-top{border-top:1px solid var(--ink)}
+.hair{border-top:1px solid var(--rule)}
+
+/* ── nav ── */
+header{
+  position:sticky;top:0;z-index:50;background:var(--paper);
+  border-bottom:1px solid var(--ink);
+}
+.nav{display:flex;align-items:center;justify-content:space-between;height:52px}
+.brand{font-weight:800;letter-spacing:-.02em;font-size:15px}
+.brand span{color:var(--mute);font-weight:500}
+.navlinks{display:flex;align-items:center;gap:22px}
+.navlinks a{
+  font-family:var(--mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;
+  text-decoration:none;color:var(--mute);padding:4px 0;border-bottom:1px solid transparent;
+}
+.navlinks a:hover{color:var(--ink);border-bottom-color:var(--ink)}
+#langbtn{
+  font-family:var(--mono);font-size:11px;letter-spacing:.08em;
+  border:1px solid var(--ink);background:transparent;color:var(--ink);
+  padding:5px 9px;cursor:pointer;line-height:1;
+}
+#langbtn:hover{background:var(--ink);color:var(--paper)}
+#langbtn b{font-weight:700}
+#langbtn i{font-style:normal;color:var(--mute)}
+#langbtn:hover i{color:var(--paper);opacity:.55}
+
+/* ── hero ── */
+.hero{padding-top:78px}
+.hero .eyebrow{grid-column:1/13;margin-bottom:30px}
+.name{
+  grid-column:1/8;grid-row:2;
+  font-size:clamp(3.4rem,12.2vw,11.6rem);
+  font-weight:800;line-height:.84;letter-spacing:-.045em;
+  text-transform:uppercase;
+}
+.name .ko{letter-spacing:-.03em}
+.hero-body{grid-column:8/13;grid-row:2;align-self:end;padding-bottom:.35em}
+.hero-body p{font-size:clamp(1.05rem,1.65vw,1.44rem);line-height:1.44;letter-spacing:-.015em;max-width:23ch}
+.hero-body p em{
+  font-style:normal;
+  background:linear-gradient(to bottom,transparent 60%,rgba(214,40,15,.2) 60%,rgba(214,40,15,.2) 96%,transparent 96%);
+  -webkit-box-decoration-break:clone;box-decoration-break:clone;
+}
+.hero-meta{grid-column:8/13;grid-row:3;margin-top:46px}
+.hero-meta dl{display:grid;grid-template-columns:auto 1fr;gap:0}
+.hero-meta dt{
+  font-family:var(--mono);font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;
+  color:var(--mute);padding:9px 16px 9px 0;border-top:1px solid var(--rule);white-space:nowrap;
+}
+.hero-meta dd{padding:9px 0;border-top:1px solid var(--rule);font-size:13.5px;text-align:right}
+.hero-meta dd a{text-decoration:none;border-bottom:1px solid var(--rule)}
+.hero-meta dd a:hover{border-bottom-color:var(--ink);color:var(--red)}
+.cta{grid-column:1/7;grid-row:3;margin:46px 0 0;display:flex;gap:0;flex-wrap:wrap;align-self:start}
+.btn{
+  font-family:var(--mono);font-size:11px;letter-spacing:.12em;text-transform:uppercase;
+  text-decoration:none;padding:13px 20px;border:1px solid var(--ink);
+  display:inline-flex;align-items:center;gap:9px;
+}
+.btn:first-child{background:var(--ink);color:var(--paper)}
+.btn:first-child:hover{background:var(--red);border-color:var(--red)}
+.btn+.btn{border-left:none}
+.btn:not(:first-child):hover{background:var(--ink);color:var(--paper)}
+
+/* ── metrics band ── */
+.metrics{margin-top:72px;border-top:1px solid var(--ink);border-bottom:1px solid var(--ink)}
+.metrics .grid{grid-template-columns:repeat(4,1fr);gap:0}
+.metric{padding:26px 20px 24px;border-left:1px solid var(--rule)}
+.metric:first-child{border-left:none;padding-left:0}
+.metric .num{
+  font-size:clamp(2.1rem,4.4vw,3.5rem);font-weight:800;
+  letter-spacing:-.045em;line-height:1;display:block;
+}
+.metric .num sup{font-size:.42em;font-weight:600;letter-spacing:0;vertical-align:super;color:var(--red)}
+.metric .cap{margin-top:12px;font-size:12.5px;color:var(--mute);line-height:1.35}
+.metric .cap b{color:var(--ink);font-weight:600;display:block}
+
+/* ── sections ── */
+section{padding-top:104px}
+section[id]{scroll-margin-top:0}
+.sechead{grid-column:1/13;display:flex;align-items:baseline;justify-content:space-between;
+  padding-bottom:14px;border-bottom:1px solid var(--ink);margin-bottom:0}
+.sechead h2{font-size:clamp(1.5rem,3vw,2.2rem);font-weight:800;letter-spacing:-.035em;line-height:1}
+.sechead .count{font-family:var(--mono);font-size:11px;letter-spacing:.14em;color:var(--mute)}
+
+/* ── work ── */
+.work{display:block}
+.item{
+  display:grid;grid-template-columns:repeat(12,1fr);gap:0 var(--gut);
+  padding:34px 0 38px;border-bottom:1px solid var(--rule);
+}
+.item:last-child{border-bottom:1px solid var(--ink)}
+.i-idx{grid-column:1/2}
+.i-idx .n{font-family:var(--mono);font-size:12px;letter-spacing:.1em;color:var(--red);font-weight:600}
+.i-idx .y{font-family:var(--mono);font-size:10.5px;letter-spacing:.08em;color:var(--mute);margin-top:6px;display:block}
+.i-main{grid-column:2/9}
+.i-main h3{font-size:clamp(1.35rem,2.5vw,1.95rem);font-weight:800;letter-spacing:-.035em;line-height:1.08}
+.i-main .sub{margin-top:8px;font-size:14px;color:var(--mute);letter-spacing:-.005em}
+.i-main .role{
+  margin-top:14px;font-family:var(--mono);font-size:10.5px;letter-spacing:.12em;
+  text-transform:uppercase;color:var(--ink);
+}
+.i-main ul{list-style:none;margin-top:20px;max-width:600px}
+.i-main .sub{max-width:640px}
+.i-main li{
+  font-size:14.5px;line-height:1.62;padding-left:17px;position:relative;margin-top:9px;color:#2b2823;
+}
+.i-main li::before{content:"";position:absolute;left:0;top:.62em;width:7px;height:1px;background:var(--ink)}
+.i-side{grid-column:9/13}
+.i-side .mrow{display:flex;justify-content:space-between;align-items:baseline;gap:14px;
+  padding:9px 0;border-top:1px solid var(--rule)}
+.i-side .mrow:first-child{border-top:1px solid var(--ink)}
+.i-side .mk{font-family:var(--mono);font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--mute)}
+.i-side .mv{font-size:14px;font-weight:700;letter-spacing:-.02em;white-space:nowrap}
+.i-side .mv .up{color:var(--red)}
+.stack{margin-top:18px;display:flex;flex-wrap:wrap;gap:5px}
+.stack span{
+  font-family:var(--mono);font-size:10px;letter-spacing:.06em;
+  border:1px solid var(--rule);padding:3px 7px;color:var(--mute);
+}
+.links{margin-top:18px;display:flex;flex-direction:column;gap:0}
+.links a{
+  font-family:var(--mono);font-size:11px;letter-spacing:.06em;text-decoration:none;
+  padding:8px 0;border-top:1px solid var(--rule);display:flex;justify-content:space-between;align-items:center;
+}
+.links a:hover{color:var(--red)}
+.links a .ar{font-size:12px}
+.links .none{
+  font-family:var(--mono);font-size:10.5px;color:var(--mute);
+  padding:8px 0;border-top:1px solid var(--rule);
+}
+
+/* ── table rows (experience / awards) ── */
+.rows{grid-column:1/13}
+.row{
+  display:grid;grid-template-columns:repeat(12,1fr);gap:0 var(--gut);
+  padding:20px 0;border-bottom:1px solid var(--rule);align-items:baseline;
+}
+.row:last-child{border-bottom:1px solid var(--ink)}
+.r-date{grid-column:1/3;font-family:var(--mono);font-size:11px;letter-spacing:.06em;color:var(--mute);white-space:nowrap}
+.r-org{grid-column:3/7;font-size:16px;font-weight:700;letter-spacing:-.02em}
+.r-org .pl{display:block;font-weight:400;font-size:12.5px;color:var(--mute);margin-top:3px}
+.r-role{grid-column:7/9;font-family:var(--mono);font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink)}
+.r-desc{grid-column:9/13;font-size:13.5px;line-height:1.55;color:#2b2823}
+
+/* ── about grid ── */
+.about{grid-column:1/13;display:grid;grid-template-columns:repeat(12,1fr);gap:0 var(--gut);
+  border-bottom:1px solid var(--ink)}
+.col{padding:26px 20px 30px 0;border-left:1px solid var(--rule);padding-left:20px}
+.col:first-child{border-left:none;padding-left:0}
+.c4{grid-column:span 4}
+.col h4{font-family:var(--mono);font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--mute);margin-bottom:16px}
+.col .line{display:flex;justify-content:space-between;gap:12px;padding:7px 0;border-top:1px solid var(--rule);font-size:13.5px}
+.col .line:first-of-type{border-top:none;padding-top:0}
+.col .line .k{color:var(--mute);font-family:var(--mono);font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;white-space:nowrap;padding-top:3px}
+.col .line .v{text-align:right;letter-spacing:-.01em}
+.col.txt .line{flex-direction:column;gap:7px;padding:16px 0}
+.col.txt .line .v{text-align:left}
+.col.txt .line .k{padding-top:0}
+.col p{font-size:13.5px;line-height:1.6;color:#2b2823}
+.col .gpa{font-size:clamp(2rem,3.6vw,2.8rem);font-weight:800;letter-spacing:-.045em;line-height:1;display:block;margin-bottom:6px}
+.col .gpa small{font-size:.33em;font-weight:500;color:var(--mute);letter-spacing:0}
+
+/* ── footer ── */
+footer{margin-top:96px;border-top:1px solid var(--ink);padding:34px 0 44px}
+.foot{display:flex;justify-content:space-between;align-items:flex-end;gap:30px;flex-wrap:wrap}
+.foot .big{font-size:clamp(1.6rem,4vw,3rem);font-weight:800;letter-spacing:-.04em;line-height:1.02}
+.foot .big a{text-decoration:none;border-bottom:2px solid var(--rule)}
+.foot .big a:hover{border-bottom-color:var(--red);color:var(--red)}
+.foot .fmeta{font-family:var(--mono);font-size:10.5px;letter-spacing:.1em;color:var(--mute);text-align:right;line-height:1.9}
+.foot .fmeta a{text-decoration:none;border-bottom:1px solid var(--rule)}
+.foot .fmeta a:hover{color:var(--ink)}
+
+/* ── responsive ── */
+@media (max-width:1000px){
+  .name{grid-column:1/13;grid-row:auto}
+  .hero-body{grid-column:1/13;grid-row:auto;margin-top:36px;padding-bottom:0}
+  .hero-body p{max-width:30ch;font-size:1.25rem}
+  .hero-meta{grid-column:1/13;grid-row:auto;margin-top:40px}
+  .cta{grid-column:1/13;grid-row:auto;margin-top:40px}
+  .i-idx{grid-column:1/13;display:flex;gap:16px;align-items:baseline;margin-bottom:12px}
+  .i-idx .y{margin-top:0}
+  .i-main{grid-column:1/13}
+  .i-side{grid-column:1/13;margin-top:26px}
+  .r-date{grid-column:1/13;margin-bottom:6px}
+  .r-org{grid-column:1/9}
+  .r-role{grid-column:9/13;text-align:right}
+  .r-desc{grid-column:1/13;margin-top:10px}
+  .c4{grid-column:span 12;border-left:none;padding-left:0;border-top:1px solid var(--rule)}
+  .about .col:first-child{border-top:none}
+}
+@media (max-width:680px){
+  :root{--gut:16px}
+  .hero{padding-top:48px}
+  section{padding-top:68px}
+  .hero-body p{font-size:1.15rem;max-width:100%}
+  .hero-meta dl{grid-template-columns:1fr}
+  .hero-meta dt{padding:12px 0 0;border-top:1px solid var(--rule)}
+  .hero-meta dd{padding:3px 0 12px;border-top:none;text-align:left;font-size:15px}
+  .hero-meta dd a{word-break:break-all}
+  .metrics .grid{grid-template-columns:repeat(2,1fr)}
+  .metric{border-left:1px solid var(--rule);border-top:1px solid var(--rule);padding:20px 14px}
+  .metric:first-child,.metric:nth-child(2){border-top:none}
+  .metric:nth-child(odd){border-left:none;padding-left:0}
+  .navlinks a:not(.nav-cv){display:none}
+  .cta{flex-direction:column}
+  .btn{justify-content:space-between}
+  .btn+.btn{border-left:1px solid var(--ink);border-top:none}
+  .foot{flex-direction:column;align-items:flex-start}
+  .foot .fmeta{text-align:left}
+}
+@media (prefers-reduced-motion:no-preference){
+  .reveal{opacity:0;transform:translateY(14px);transition:opacity .55s ease,transform .55s ease}
+  .reveal.in{opacity:1;transform:none}
+}
+@media print{
+  header,.cta,#langbtn{display:none}
+  body{background:#fff}
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap nav">
+    <div class="brand">
+      <span class="ko">방정호 <span>· AI</span></span>
+      <span class="en">Jeongho Bang <span>· AI</span></span>
+    </div>
+    <nav class="navlinks">
+      <a href="#work"><span class="ko">프로젝트</span><span class="en">Work</span></a>
+      <a href="#exp"><span class="ko">경력</span><span class="en">Experience</span></a>
+      <a href="#about"><span class="ko">소개</span><span class="en">About</span></a>
+      <a class="nav-cv" href="bangjeongho_CV.pdf" target="_blank" rel="noopener">CV</a>
+      <button id="langbtn" type="button" aria-label="Switch language">
+        <b class="ko">KR</b><b class="en">EN</b><i class="ko"> / EN</i><i class="en"> / KR</i>
+      </button>
+    </nav>
+  </div>
+</header>
+
+<main>
+
+<!-- HERO -->
+<div class="wrap hero">
+  <div class="grid">
+    <div class="eyebrow lab">
+      <span class="ko">강원대학교 AI융합학과 · 2027년 2월 졸업예정 · 춘천</span>
+      <span class="en">Kangwon National University, B.S. AI Convergence · Graduating Feb 2027 · Korea</span>
+    </div>
+
+    <h1 class="name">
+      <span class="ko">방정호</span>
+      <span class="en">Jeongho<br>Bang</span>
+    </h1>
+
+    <div class="hero-body">
+      <p class="ko">저는 AI 서비스를 만들고 싶은 사람입니다. 주로 검색·추론 파이프라인을 <em>설계하고 개선한 다음에</em> 할루시네이션을 없애는 것이 관심 분야입니다.</p>
+      <p class="en">I build AI services — My primary area of ​​interest is <em>designing and improving search and inference pipelines</em>, and then eliminating hallucinations.</p>
+    </div>
+
+    <div class="hero-meta">
+      <dl>
+        <dt>Email</dt>
+        <dd><a href="mailto:bangjeongho833@gmail.com">bangjeongho833@gmail.com</a></dd>
+        <dt>GitHub</dt>
+        <dd><a href="https://github.com/BANG-JEONGHO" target="_blank" rel="noopener">BANG-JEONGHO</a></dd>
+        <dt>Phone</dt>
+        <dd><a href="tel:+821075512820">+82 10-7551-2820</a></dd>
+        <dt><span class="ko">전공 학점</span><span class="en">Major GPA</span></dt>
+        <dd>4.00 / 4.50</dd>
+      </dl>
+    </div>
+
+    <div class="cta">
+      <a class="btn" href="bangjeongho_CV.pdf" download>
+        <span class="ko">이력서 PDF</span><span class="en">Download CV</span><span>↓</span>
+      </a>
+      <a class="btn" href="mailto:bangjeongho833@gmail.com">
+        <span class="ko">메일 보내기</span><span class="en">Email me</span><span>↗</span>
+      </a>
+      <a class="btn" href="https://github.com/BANG-JEONGHO" target="_blank" rel="noopener">
+        <span>GitHub</span><span>↗</span>
+      </a>
+    </div>
+  </div>
+</div>
+
+<!-- METRICS -->
+<div class="metrics">
+  <div class="wrap">
+    <div class="grid">
+      <div class="metric">
+        <span class="num">31<sup>×</sup></span>
+        <span class="cap">
+          <b class="ko">검색 인덱스 가속</b><b class="en">Retrieval speed-up</b>
+          <span class="ko">3.76ms → 0.12ms, 결과는 비트 단위 동일</span>
+          <span class="en">3.76ms → 0.12ms, bit-identical output</span>
+        </span>
+      </div>
+      <div class="metric">
+        <span class="num">0.939</span>
+        <span class="cap">
+          <b class="ko">방언 검색 F1</b><b class="en">Dialect retrieval F1</b>
+          <span class="ko">0.865에서 개선 · 어미 변형 처리</span>
+          <span class="en">up from 0.865 · verb-ending normalization</span>
+        </span>
+      </div>
+      <div class="metric">
+        <span class="num">3–5<sup>s</sup></span>
+        <span class="cap">
+          <b class="ko">강사 매칭 응답</b><b class="en">Instructor matching</b>
+          <span class="ko">기존 약 60초 · 후보 20명 일괄 처리</span>
+          <span class="en">from ~60s · 20 candidates in one pass</span>
+        </span>
+      </div>
+      <div class="metric">
+        <span class="num">28.7<sup>%</sup></span>
+        <span class="cap">
+          <b class="ko">여행 이동거리 감소</b><b class="en">Travel distance cut</b>
+          <span class="ko">745개 코스 벤치마크 기준</span>
+          <span class="en">verified on a 745-course benchmark</span>
+        </span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- WORK -->
+<section id="work" class="wrap">
+  <div class="grid">
+    <div class="sechead">
+      <h2><span class="ko">주요 프로젝트</span><span class="en">Selected Work</span></h2>
+      <span class="count">04</span>
+    </div>
+  </div>
+
+  <div class="work">
+
+    <!-- 01 -->
+    <article class="item reveal">
+      <div class="i-idx"><span class="n">01</span><span class="y">2026.07 — 08</span></div>
+      <div class="i-main">
+        <h3>i-Core Meet</h3>
+        <p class="sub">
+          <span class="ko">근거 기반 AI 강사 매칭 플랫폼 · 아이코어이앤씨</span>
+          <span class="en">Evidence-grounded AI instructor matching platform · iCORE E&amp;C</span>
+        </p>
+        <p class="role"><span class="ko">AI 에이전트 / 백엔드</span><span class="en">AI Agent &amp; Backend</span></p>
+        <ul>
+          <li class="ko">입찰 공고를 읽어 요구조건을 뽑고, 사내 강사를 그 조건에 맞춰 순위 매기는 전체 흐름을 구현했습니다. 모든 점수에는 근거 문장이 붙습니다.</li>
+          <li class="en">Built the full flow that reads a tender document, extracts its requirements, and ranks in-house instructors against them — every score carries a supporting quote.</li>
+
+          <li class="ko">강사를 두 축으로 평가했습니다. 이력서가 의미상 얼마나 가까운지(사전 임베딩 벡터 유사도), 그리고 필수 키워드를 실제로 몇 개 갖고 있는지. 두 값을 합쳐 하나의 순위를 만들되, 해당 공고가 요구한 항목만 계산에 넣어 공고가 달라도 점수를 비교할 수 있게 했습니다.</li>
+          <li class="en">Evaluated instructor two ways — semantic closeness of the résumé (vector similarity over pre-embedded text) and how many required keywords it actually contains — then combined both into one ranking. Only the criteria a given tender asks for enter the calculation, so scores stay comparable across tenders.</li>
+
+          <li class="ko">AI 두 개를 이용해 독립적으로 실행 및 검증했습니다. 검증 코드가 인용 문장이 원문에 실제로 존재하는지, 요구 자격증을 실제로 보유했는지 확인하고, 최종 RECOMMENDED / NEEDS_REVIEW / ON_HOLD 판정은 모델이 아니라 고정 규칙이 내립니다.</li>
+          <li class="en">Checked the AI with another AI instead of with code: a validator confirms every quoted sentence really appears in the source document and that required certifications are actually held — and fixed rules, not the model, decide the final RECOMMENDED / NEEDS_REVIEW / ON_HOLD status.</li>
+        </ul>
+      </div>
+      <div class="i-side">
+        <div class="mrow"><span class="mk"><span class="ko">매칭 시간</span><span class="en">Matching time</span></span><span class="mv">60s → <span class="up">3–5s</span></span></div>
+        <div class="mrow"><span class="mk"><span class="ko">임베딩</span><span class="en">Embeddings</span></span><span class="mv"><span class="ko">사전 계산</span><span class="en">Pre-computed</span></span></div>
+        <div class="mrow"><span class="mk"><span class="ko">평가 방식</span><span class="en">Evaluation</span></span><span class="mv"><span class="ko">20명 일괄</span><span class="en">20 at once</span></span></div>
+        <div class="stack">
+          <span>LLM Agent</span><span>RAG</span><span>Vector Search</span><span>Python</span><span>Backend</span>
+        </div>
+        <div class="links">
+          <a href="https://github.com/BANG-JEONGHO/i-core.git" target="_blank" rel="noopener"><span>GitHub</span><span class="ar">↗</span></a>
+        </div>
+      </div>
+    </article>
+
+    <!-- 02 -->
+    <article class="item reveal">
+      <div class="i-idx"><span class="n">02</span><span class="y">2026.03 — 07</span></div>
+      <div class="i-main">
+        <h3><span class="ko">문진톡톡</span><span class="en">Munjin Talk Talk</span></h3>
+        <p class="sub">
+          <span class="ko">방언을 알아듣는 AI 임상 문진 도우미 · 2026 X+AI-SW 융합 프로젝트 경진대회 최우수상</span>
+          <span class="en">Dialect-aware AI clinical intake assistant · Top Excellence Award, 2026 X+AI-SW Convergence Project Competition</span>
+        </p>
+        <p class="role"><span class="ko">음성 인식 / 검색 파이프라인</span><span class="en">Speech Recognition &amp; Retrieval Pipeline</span></p>
+        <ul>
+          <li class="ko">강원도 어르신이 말로 사전 문진을 마치면, 그 내용이 의료진용 요약과 환자용 쉬운 설명으로 각각 자동 변환되는 서비스입니다.</li>
+          <li class="en">A service that lets elderly patients in Gangwon Province complete a spoken pre-consultation intake, automatically converting it into a summary for doctors and a plain-language guide for patients.</li>
+
+          <li class="ko">강원 방언 데이터로 Amazon Transcribe 커스텀 어휘를 만들고, N-gram 매칭으로 후보 용어 상위 8개를 가져옵니다.</li>
+          <li class="en">Constructed a custom Amazon Transcribe vocabulary from Gangwon dialect data and retrieved the top-8 candidate terms with N-gram matching.</li>
+
+          <li class="ko">방언의 어미 변형 때문에 생기던 인식 실패를 어미 제거 + N-gram 매칭으로 해결해 검색 정확도(F1)를 0.865에서 0.939로 올렸습니다.</li>
+          <li class="en">Resolved recognition failures caused by dialectal verb-ending variation through ending removal and N-gram matching, improving retrieval accuracy (F1) from 0.865 to 0.939.</li>
+
+          <li class="ko">검색 인덱스를 미리 계산하고 질의 시점에 불필요한 후보의 99.4%를 잘라내, 검색 지연을 3.76ms에서 0.12ms로 31배 줄였습니다. 결과는 비트 단위로 동일합니다.</li>
+          <li class="en">Pre-computed the retrieval index and pruned 99.4% of unnecessary candidates at query time, cutting retrieval latency 31× (3.76ms → 0.12ms) with bit-identical output.</li>
+        </ul>
+      </div>
+      <div class="i-side">
+        <div class="mrow"><span class="mk"><span class="ko">검색 F1</span><span class="en">Retrieval F1</span></span><span class="mv">0.865 → <span class="up">0.939</span></span></div>
+        <div class="mrow"><span class="mk"><span class="ko">검색 지연</span><span class="en">Latency</span></span><span class="mv">3.76 → <span class="up">0.12 ms</span></span></div>
+        <div class="mrow"><span class="mk"><span class="ko">후보 가지치기</span><span class="en">Candidates pruned</span></span><span class="mv">99.4%</span></div>
+        <div class="mrow"><span class="mk"><span class="ko">수상</span><span class="en">Award</span></span><span class="mv"><span class="ko">최우수상</span><span class="en">Top Excellence</span></span></div>
+        <div class="stack">
+          <span>Amazon Transcribe</span><span>Bedrock</span><span>FastAPI</span><span>React</span><span>AWS Lambda</span>
+        </div>
+        <div class="links">
+          <a href="https://github.com/BANG-JEONGHO/munjin-talk-talk" target="_blank" rel="noopener"><span>GitHub</span><span class="ar">↗</span></a>
+        </div>
+      </div>
+    </article>
+
+    <!-- 03 -->
+    <article class="item reveal">
+      <div class="i-idx"><span class="n">03</span><span class="y">2026.03 — 06</span></div>
+      <div class="i-main">
+        <h3>Pet Times</h3>
+        <p class="sub">
+          <span class="ko">반려동물 케어 · 가상 피팅 플랫폼 · KCC 2026 포스터 발표</span>
+          <span class="en">AI pet care &amp; virtual try-on platform · Poster, Korea Computer Congress (KCC) 2026</span>
+        </p>
+        <p class="role"><span class="ko">가상 피팅 모델 개발</span><span class="en">Virtual Try-On Model</span></p>
+        <ul>
+          <li class="ko">사람 옷 가상 피팅 기술을 반려동물 영역으로 옮겼습니다. 반려동물 옷은 온라인 구매 시 상품 이미지와 후기에만 의존해야 한다는 문제에서 출발했습니다.</li>
+          <li class="en">Transferred human virtual try-on techniques to the pet domain, addressing the problem that online buyers of pet clothing must rely on product images and third-party reviews.</li>
+
+          <li class="ko">기존 VTON을 네 단계 파이프라인(검출 → 분할 → 구조 조건화 → 합성)으로 재설계해 네발 자세, 털 질감, 보존해야 하는 부위(얼굴·다리)를 처리했습니다.</li>
+          <li class="en">Redesigned conventional VTON into a four-stage pipeline — detection → segmentation → structural conditioning → synthesis — to handle quadrupedal posture, fur texture, and must-preserve regions (face, legs).</li>
+
+          <li class="ko">Pet-VTON 파이프라인을 구축했습니다. 자세와 표면 기하는 DensePose-CSE(동물) 임베딩, 몸통 착용 마스크는 SAM(머리·다리·꼬리 제외), 합성은 반려동물 도메인에 파인튜닝한 IDM-VTON.</li>
+          <li class="en">Built the Pet-VTON pipeline: DensePose-CSE (animal) embeddings for body orientation and surface geometry, a torso-only wear mask via SAM (excluding head, legs, tail), and IDM-VTON fine-tuned on the pet domain.</li>
+
+          <li class="ko">사전 계산 가능한 구성요소를 파이프라인에서 분리해 추론 시간을 98.7초에서 79.5초로 19.5% 줄였습니다.</li>
+          <li class="en">Separated pre-computable components from the pipeline, reducing inference time from 98.7s to 79.5s (19.5% faster).</li>
+        </ul>
+      </div>
+      <div class="i-side">
+        <div class="mrow"><span class="mk"><span class="ko">추론 시간</span><span class="en">Inference</span></span><span class="mv">98.7 → <span class="up">79.5 s</span></span></div>
+        <div class="mrow"><span class="mk"><span class="ko">파이프라인</span><span class="en">Pipeline</span></span><span class="mv"><span class="ko">4단계</span><span class="en">4 stages</span></span></div>
+        <div class="mrow"><span class="mk"><span class="ko">발표</span><span class="en">Published</span></span><span class="mv">KCC 2026</span></div>
+        <div class="stack">
+          <span>IDM-VTON</span><span>DensePose-CSE</span><span>SAM</span><span>PyTorch</span><span>Flutter</span><span>FastAPI</span><span>ChromaDB</span>
+        </div>
+        <div class="links">
+          <a href="https://github.com/BANG-JEONGHO/pet-times" target="_blank" rel="noopener"><span>GitHub</span><span class="ar">↗</span></a>
+          <a href="https://github.com/BANG-JEONGHO/idm-vton" target="_blank" rel="noopener"><span class="ko">모델 코드</span><span class="en">Model code</span><span class="ar">↗</span></a>
+        </div>
+      </div>
+    </article>
+
+    <!-- 04 -->
+    <article class="item reveal">
+      <div class="i-idx"><span class="n">04</span><span class="y">2026.03 — 06</span></div>
+      <div class="i-main">
+        <h3>Peace Pass</h3>
+        <p class="sub">
+          <span class="ko">DMZ 맞춤 여행 코스 추천 서비스</span>
+          <span class="en">Personalized DMZ travel recommendation service</span>
+        </p>
+        <p class="role"><span class="ko">팀장 · AI / 백엔드</span><span class="en">Team Lead · AI / Backend</span></p>
+        <ul>
+          <li class="ko">지역, 동행, 여행 스타일, 가용 시간을 입력받아 DMZ 여행 일정을 추천하는 모바일 웹 서비스를 팀장으로서 이끌었습니다.</li>
+          <li class="en">Led development of a mobile web service that recommends personalized DMZ travel itineraries based on region, companion type, travel style, and available time.</li>
+
+          <li class="ko">관광지 108개, 거리 레코드 585개, 권역 9개 위에 규칙 기반 추천 엔진을 설계했습니다. 가중 태그 매칭으로 장소를 점수화하고, 소요시간별 장소 수·최대 거리 제약으로 코스 후보를 가지치기합니다.</li>
+          <li class="en">Designed a rule-based recommendation engine over 108 attractions, 585 distance records, and nine regions — scoring places by weighted tag-matching and pruning course candidates under per-duration place-count and max-distance constraints.</li>
+
+          <li class="ko">최근접 이웃 방식으로 방문 순서를 정해 무작위 순서 대비 평균 이동거리를 28.7% 줄였습니다(745개 코스 벤치마크로 검증).</li>
+          <li class="en">Applied nearest-neighbor route ordering, reducing average travel distance by 28.7% versus random visit order (verified on a 745-course benchmark).</li>
+
+          <li class="ko">Gemini 2.5 Flash는 장소별 추천 이유와 여행 팁 생성에만 쓰고, 일정 구성 로직 자체는 결정적으로 유지했습니다.</li>
+          <li class="en">Restricted Gemini 2.5 Flash to generating place-level rationales and travel tips only, keeping itinerary logic deterministic.</li>
+        </ul>
+      </div>
+      <div class="i-side">
+        <div class="mrow"><span class="mk"><span class="ko">이동거리</span><span class="en">Travel distance</span></span><span class="mv"><span class="up">−28.7%</span></span></div>
+        <div class="mrow"><span class="mk"><span class="ko">벤치마크</span><span class="en">Benchmark</span></span><span class="mv"><span class="ko">745개 코스</span><span class="en">745 courses</span></span></div>
+        <div class="mrow"><span class="mk"><span class="ko">데이터</span><span class="en">Dataset</span></span><span class="mv"><span class="ko">관광지 108</span><span class="en">108 places</span></span></div>
+        <div class="stack">
+          <span>Gemini 2.5 Flash</span><span>FastAPI</span><span>React</span><span>Leaflet</span><span>Firestore</span><span>Cloud Run</span><span>TourAPI</span>
+        </div>
+        <div class="links">
+          <a href="https://github.com/BANG-JEONGHO/peace-pass" target="_blank" rel="noopener"><span>GitHub</span><span class="ar">↗</span></a>
+        </div>
+      </div>
+    </article>
+
+  </div>
+</section>
+
+<!-- EXPERIENCE -->
+<section id="exp" class="wrap">
+  <div class="grid">
+    <div class="sechead">
+      <h2><span class="ko">경력</span><span class="en">Experience</span></h2>
+      <span class="count">03</span>
+    </div>
+    <div class="rows">
+      <div class="row reveal">
+        <div class="r-date">2026.07 — 08</div>
+        <div class="r-org">
+          <span class="ko">아이코어이앤씨</span><span class="en">iCORE E&amp;C</span>
+          <span class="pl ko">서울</span><span class="pl en">Seoul, Korea</span>
+        </div>
+        <div class="r-role"><span class="ko">사내 플랫폼 개발 인턴</span><span class="en">In-House Platform Dev Intern</span></div>
+        <div class="r-desc">
+          <span class="ko">대구소프트웨어마이스터고(DSMG) Anti-Gravity 교육 진행. 사내 운영용 과정별 강사 매칭 플랫폼 개발.</span>
+          <span class="en">Delivered Anti-Gravity training at Daegu Software Meister High School. Developed a course-specific instructor-matching platform for internal operations.</span>
+        </div>
+      </div>
+      <div class="row reveal">
+        <div class="r-date">2025.03 — 11</div>
+        <div class="r-org">
+          <span class="ko">강원대학교 CVMIP 연구실</span><span class="en">CVMIP Lab, Kangwon National University</span>
+          <span class="pl ko">지도교수 김윤 · 춘천</span><span class="pl en">Advisor: Prof. Yoon Kim · Chuncheon</span>
+        </div>
+        <div class="r-role"><span class="ko">학부 연구생</span><span class="en">Undergraduate Researcher</span></div>
+        <div class="r-desc">
+          <span class="ko">BERT 마스크 언어모델링, EfficientNet 복합 스케일링 논문 세미나 발표. Attention, 역전파, CNN, Transformer 학습.</span>
+          <span class="en">Presented paper seminars on BERT masked language modeling and EfficientNet compound scaling. Studied attention, backpropagation, CNNs, and Transformers.</span>
+        </div>
+      </div>
+      <div class="row reveal">
+        <div class="r-date">2025.10 — 11</div>
+        <div class="r-org">
+          <span class="ko">더존비즈온</span><span class="en">Douzone Bizon</span>
+          <span class="pl ko">춘천</span><span class="pl en">Chuncheon, Korea</span>
+        </div>
+        <div class="r-role"><span class="ko">풀스택 개발 인턴</span><span class="en">Full-Stack Dev Intern</span></div>
+        <div class="r-desc">
+          <span class="ko">서울시 공공 CCTV 데이터와 사용자 제보를 결합한 카카오맵 서비스 <a href="https://github.com/BANG-JEONGHO/safety-web" target="_blank" rel="noopener" style="border-bottom:1px solid var(--rule)">Safety Web</a>을 단독 개발 (React, FastAPI, MySQL).</span>
+          <span class="en">Independently developed <a href="https://github.com/BANG-JEONGHO/safety-web" target="_blank" rel="noopener" style="border-bottom:1px solid var(--rule)">Safety Web</a>, a Kakao Maps service combining Seoul public CCTV data with user-submitted reports (React, FastAPI, MySQL).</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- AWARDS -->
+<section class="wrap">
+  <div class="grid">
+    <div class="sechead">
+      <h2><span class="ko">수상 및 발표</span><span class="en">Awards &amp; Publication</span></h2>
+      <span class="count">05</span>
+    </div>
+    <div class="rows">
+      <div class="row reveal">
+        <div class="r-date">2026.07</div>
+        <div class="r-org">
+          <span class="ko">최우수상</span><span class="en">Top Excellence Award</span>
+          <span class="pl ko">2026 X+AI-SW 융합 프로젝트 경진대회 · SW중심대학사업단, 강원대학교</span>
+          <span class="pl en">2026 X+AI-SW Convergence Project Competition · SW-Centered University Program, KNU</span>
+        </div>
+        <div class="r-role">Munjin Talk Talk</div>
+        <div class="r-desc">
+          <span class="ko">강원도 의료 현장의 의사소통 문제를 다룬 AI 서비스로 수상.</span>
+          <span class="en">Awarded for an AI service addressing communication challenges in clinical settings in Gangwon Province.</span>
+        </div>
+      </div>
+      <div class="row reveal">
+        <div class="r-date">2026.06</div>
+        <div class="r-org">
+          <span class="ko">포스터 발표</span><span class="en">Poster Presentation</span>
+          <span class="pl ko">한국컴퓨터종합학술대회(KCC 2026) · 제주</span>
+          <span class="pl en">The 53rd Korea Computer Congress (KCC 2026) · Jeju, Korea</span>
+        </div>
+        <div class="r-role"><span class="ko">제1저자</span><span class="en">First Author</span></div>
+        <div class="r-desc">
+          <span class="ko">“PET TIMES: 반려동물 가상 피팅 및 케어 스케줄링을 위한 AI 기반 통합 서비스”</span>
+          <span class="en">“PET TIMES: An AI-based Integrated Service for Pet Virtual Fitting and Care Scheduling”</span>
+        </div>
+      </div>
+      <div class="row reveal">
+        <div class="r-date">2025.11</div>
+        <div class="r-org">
+          <span class="ko">장려상</span><span class="en">Encouragement Award</span>
+          <span class="pl ko">2025 강원도 대학생 AI 창업 아이디어 경진대회 · 상지대 RISE 사업단</span>
+          <span class="pl en">2025 Gangwon Province Student AI Startup Idea Competition · Sangji Univ. RISE Project Group</span>
+        </div>
+        <div class="r-role">AI Dictionary</div>
+        <div class="r-desc">
+          <span class="ko">AI 기반 웹툰 국어사전 아이디어 제안.</span>
+          <span class="en">Proposed an AI-powered webtoon Korean dictionary.</span>
+        </div>
+      </div>
+      <div class="row reveal">
+        <div class="r-date">2026.07</div>
+        <div class="r-org">
+          <span class="ko">학과 성적우수 장학금</span><span class="en">Departmental Academic Excellence Scholarship</span>
+          <span class="pl ko">강원대학교</span><span class="pl en">Kangwon National University</span>
+        </div>
+        <div class="r-role"><span class="ko">장학</span><span class="en">Scholarship</span></div>
+        <div class="r-desc"></div>
+      </div>
+      <div class="row reveal">
+        <div class="r-date">2021.08</div>
+        <div class="r-org">
+          <span class="ko">성적우수 장학금</span><span class="en">Academic Excellence Scholarship</span>
+          <span class="pl ko">강원대학교</span><span class="pl en">Kangwon National University</span>
+        </div>
+        <div class="r-role"><span class="ko">장학</span><span class="en">Scholarship</span></div>
+        <div class="r-desc"></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ABOUT -->
+<section id="about" class="wrap">
+  <div class="grid">
+    <div class="sechead">
+      <h2><span class="ko">소개</span><span class="en">About</span></h2>
+      <span class="count">—</span>
+    </div>
+    <div class="about">
+      <div class="col c4">
+        <h4><span class="ko">학력</span><span class="en">Education</span></h4>
+        <span class="gpa">4.00<small> / 4.50</small></span>
+        <p class="ko" style="margin-bottom:14px;color:var(--mute);font-size:12.5px">전공 학점 · 전체 3.97 / 4.50</p>
+        <p class="en" style="margin-bottom:14px;color:var(--mute);font-size:12.5px">Major GPA · Total 3.97 / 4.50</p>
+        <div class="line"><span class="k"><span class="ko">학교</span><span class="en">School</span></span><span class="v"><span class="ko">강원대학교</span><span class="en">Kangwon Nat'l Univ.</span></span></div>
+        <div class="line"><span class="k"><span class="ko">전공</span><span class="en">Major</span></span><span class="v"><span class="ko">AI융합학과 (학사)</span><span class="en">B.S. AI Convergence</span></span></div>
+        <div class="line"><span class="k"><span class="ko">기간</span><span class="en">Term</span></span><span class="v">2021.03 — 2027.02</span></div>
+      </div>
+
+      <div class="col c4">
+        <h4><span class="ko">기술</span><span class="en">Skills</span></h4>
+        <div class="line"><span class="k"><span class="ko">언어</span><span class="en">Languages</span></span><span class="v">Python, Java</span></div>
+        <div class="line"><span class="k">AI</span><span class="v">PyTorch, RAG, LangGraph</span></div>
+        <div class="line"><span class="k"><span class="ko">데이터</span><span class="en">Data</span></span><span class="v">pandas, NumPy, SQL, Matplotlib, Seaborn</span></div>
+        <div class="line"><span class="k"><span class="ko">자격</span><span class="en">Certs</span></span><span class="v">TOPCIT Lv.3, ADsP, SQLD</span></div>
+      </div>
+
+      <div class="col c4 txt">
+        <h4><span class="ko">그 외 활동</span><span class="en">Also</span></h4>
+        <div class="line">
+          <span class="k">2026.06—08</span>
+          <span class="v">
+            <span class="ko"><b>코멘토 AI 필드업</b><br><span style="color:var(--mute);font-size:12.5px">반도체 품질 데이터 분석 및 시험성적서 생성 자동화. 불량 원인 부서 식별과 부적합 기록 해석.</span></span>
+            <span class="en"><b>Comento AI Field-Up</b><br><span style="color:var(--mute);font-size:12.5px">Semiconductor quality analysis and Certificate-of-Analysis automation; identifying departments linked to quality issues.</span></span>
+          </span>
+        </div>
+        <div class="line">
+          <span class="k">2024.07—08</span>
+          <span class="v">
+            <span class="ko"><b>엘리스 아카데미</b><br><span style="color:var(--mute);font-size:12.5px">데이터 분석 부트캠프. Python·pandas·NumPy·Seaborn으로 정제, 변환, EDA, 시각화.</span></span>
+            <span class="en"><b>Elice Academy</b><br><span style="color:var(--mute);font-size:12.5px">Data analysis bootcamp — cleaning, transformation, EDA and visualization with Python, pandas, NumPy, Seaborn.</span></span>
+          </span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+</main>
+
+<footer>
+  <div class="wrap foot">
+    <div class="big">
+      <span class="ko">궁금한 것이 있다면<br><a href="mailto:bangjeongho833@gmail.com">메일 주세요 ↗</a></span>
+      <span class="en">If you have any questions?<br><a href="mailto:bangjeongho833@gmail.com">Say hello ↗</a></span>
+    </div>
+    <div class="fmeta">
+      <a href="mailto:bangjeongho833@gmail.com">bangjeongho833@gmail.com</a><br>
+      <a href="https://github.com/BANG-JEONGHO" target="_blank" rel="noopener">github.com/BANG-JEONGHO</a><br>
+      <a href="bangjeongho_CV.pdf" download><span class="ko">이력서 PDF ↓</span><span class="en">CV (PDF) ↓</span></a><br>
+      <span style="color:var(--rule)">© 2026 <span class="ko">방정호</span><span class="en">Jeongho Bang</span></span>
+    </div>
+  </div>
+</footer>
+
+<script>
+(function(){
+  var root=document.documentElement, btn=document.getElementById('langbtn');
+  var T={ko:"방정호 — AI / Backend",en:"Jeongho Bang — AI / Backend"};
+
+  function set(l){
+    root.setAttribute('lang',l);
+    document.title=T[l];
+    try{localStorage.setItem('pf-lang',l)}catch(e){}
+  }
+
+  var saved=null;
+  try{saved=localStorage.getItem('pf-lang')}catch(e){}
+  if(!saved){
+    saved=(navigator.language||'ko').toLowerCase().indexOf('ko')===0?'ko':'en';
+  }
+  set(saved);
+
+  btn.addEventListener('click',function(){
+    set(root.getAttribute('lang')==='ko'?'en':'ko');
+  });
+
+  // reveal on scroll
+  if('IntersectionObserver' in window && !window.matchMedia('(prefers-reduced-motion: reduce)').matches){
+    var io=new IntersectionObserver(function(es){
+      es.forEach(function(e){ if(e.isIntersecting){ e.target.classList.add('in'); io.unobserve(e.target); } });
+    },{rootMargin:'0px 0px -8% 0px',threshold:0.06});
+    document.querySelectorAll('.reveal').forEach(function(el){io.observe(el)});
+  }else{
+    document.querySelectorAll('.reveal').forEach(function(el){el.classList.add('in')});
+  }
+})();
+</script>
+</body>
+</html>
