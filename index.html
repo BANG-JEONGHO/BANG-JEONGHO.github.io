@@ -111,19 +111,6 @@ header{
 .btn+.btn{border-left:none}
 .btn:not(:first-child):hover{background:var(--ink);color:var(--paper)}
 
-/* ── metrics band ── */
-.metrics{margin-top:72px;border-top:1px solid var(--ink);border-bottom:1px solid var(--ink)}
-.metrics .grid{grid-template-columns:repeat(4,1fr);gap:0}
-.metric{padding:26px 20px 24px;border-left:1px solid var(--rule)}
-.metric:first-child{border-left:none;padding-left:0}
-.metric .num{
-  font-size:clamp(2.1rem,4.4vw,3.5rem);font-weight:800;
-  letter-spacing:-.045em;line-height:1;display:block;
-}
-.metric .num sup{font-size:.42em;font-weight:600;letter-spacing:0;vertical-align:super;color:var(--red)}
-.metric .cap{margin-top:12px;font-size:12.5px;color:var(--mute);line-height:1.35}
-.metric .cap b{color:var(--ink);font-weight:600;display:block}
-
 /* ── sections ── */
 section{padding-top:104px}
 section[id]{scroll-margin-top:0}
@@ -247,10 +234,6 @@ footer{margin-top:96px;border-top:1px solid var(--ink);padding:34px 0 44px}
   .hero-meta dt{padding:12px 0 0;border-top:1px solid var(--rule)}
   .hero-meta dd{padding:3px 0 12px;border-top:none;text-align:left;font-size:15px}
   .hero-meta dd a{word-break:break-all}
-  .metrics .grid{grid-template-columns:repeat(2,1fr)}
-  .metric{border-left:1px solid var(--rule);border-top:1px solid var(--rule);padding:20px 14px}
-  .metric:first-child,.metric:nth-child(2){border-top:none}
-  .metric:nth-child(odd){border-left:none;padding-left:0}
   .navlinks a:not(.nav-cv){display:none}
   .cta{flex-direction:column}
   .btn{justify-content:space-between}
@@ -331,46 +314,6 @@ footer{margin-top:96px;border-top:1px solid var(--ink);padding:34px 0 44px}
       <a class="btn" href="https://github.com/BANG-JEONGHO" target="_blank" rel="noopener">
         <span>GitHub</span><span>↗</span>
       </a>
-    </div>
-  </div>
-</div>
-
-<!-- METRICS -->
-<div class="metrics">
-  <div class="wrap">
-    <div class="grid">
-      <div class="metric">
-        <span class="num">31<sup>×</sup></span>
-        <span class="cap">
-          <b class="ko">검색 인덱스 가속</b><b class="en">Retrieval speed-up</b>
-          <span class="ko">3.76ms → 0.12ms, 결과는 비트 단위 동일</span>
-          <span class="en">3.76ms → 0.12ms, bit-identical output</span>
-        </span>
-      </div>
-      <div class="metric">
-        <span class="num">0.939</span>
-        <span class="cap">
-          <b class="ko">방언 검색 F1</b><b class="en">Dialect retrieval F1</b>
-          <span class="ko">0.865에서 개선 · 어미 변형 처리</span>
-          <span class="en">up from 0.865 · verb-ending normalization</span>
-        </span>
-      </div>
-      <div class="metric">
-        <span class="num">3–5<sup>s</sup></span>
-        <span class="cap">
-          <b class="ko">강사 매칭 응답</b><b class="en">Instructor matching</b>
-          <span class="ko">기존 약 60초 · 후보 20명 일괄 처리</span>
-          <span class="en">from ~60s · 20 candidates in one pass</span>
-        </span>
-      </div>
-      <div class="metric">
-        <span class="num">28.7<sup>%</sup></span>
-        <span class="cap">
-          <b class="ko">여행 이동거리 감소</b><b class="en">Travel distance cut</b>
-          <span class="ko">745개 코스 벤치마크 기준</span>
-          <span class="en">verified on a 745-course benchmark</span>
-        </span>
-      </div>
     </div>
   </div>
 </div>
